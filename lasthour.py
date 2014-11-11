@@ -9,7 +9,7 @@ import matplotlib.dates as md
 from pylab import *
 from datetime import datetime, timedelta, time, date
 import sys
-from WeatherStation import dew_point
+from WeatherStation import dew_point, apparent_temp
 
 nodes = {"2": "Outside", "10": "Kitchen", "21": "Bedroom"}
 
@@ -65,6 +65,13 @@ def mungeData(data, start):
 	if "humidity" in summary and  "Outside" in summary["temp"]:
             dp = dew_point(summary["temp"]["Outside"], summary["humidity"])
             summary["dew_point"] = dp
+            if "wind" in summary:
+               ap_temp = apparent_temp(summary["temp"]["Outside"], summary["humidity"], summary["wind"])
+               summary["feels_like"] = ap_temp
+            else:
+               ap_temp = apparent_temp(summary["temp"]["Outside"], summary["humidity"], 0)
+               summary["feels_like"] = ap_temp
+
         alldata.append(summary)
     
     
@@ -123,10 +130,10 @@ def outputRecent(filename, title):
         f.write('</tr>' + "\n")
         
         f.write('<tr>' + "\n")
-        for n in nodes:
+        for n in sorted(nodes):
             f.write('<th>{0}</th>'.format(nodes[n]) + "\n")
-        f.write('<th>Feels Like</th>' + "\n")
         f.write('<th>DP</th>' + "\n")
+        f.write('<th>Feels Like</th>' + "\n")
         f.write('<th>Outside</th>' + "\n")
         f.write('<th>dir</th>' + "\n")
         f.write('<th>ave</th>' + "\n")
@@ -137,13 +144,13 @@ def outputRecent(filename, title):
             f.write('<tr>' + "\n")
             timestamp = row["date"].strftime("%H:%M")
             f.write('<td>'+str(timestamp) + "</td>\n")
-            for n in nodes:
+            for n in sorted(nodes):
                 if nodes[n] in row["temp"]:
                     f.write('<th>{:.1f}</th>'.format(row["temp"][nodes[n]]) + "\n")
                 else:
                     f.write('<th> </th>' + "\n")
-            f.write('<th> </th>' + "\n")
             f.write('<th>{:.1f}</th>'.format(row["dew_point"]) + "\n")
+            f.write('<th>{:.1f}</th>'.format(row["feels_like"]) + "\n")
 
             try:
                 f.write('<th>{:.1f}</th>'.format(row["humidity"]) + "\n")
