@@ -12,7 +12,7 @@ for n in nodes:
   data = c.execute(sql).fetchone()
   lastComms = datetime.strptime(data[0], "%Y-%m-%d %H:%M:%S")
   batt = float(data[1])
-  if lastComms < now-timedelta(minutes=15) and lastComms < now-timedelta(minutes=60):
+  if lastComms < now-timedelta(minutes=15) and lastComms >= now-timedelta(minutes=60):
     errorConditions.append("Lost comms with node {0} since {1}".format(node, lastComms))
   if batt < float(2.9):
     errorConditions.append("Battery in node {0} is low: {1}".format(node, batt))
